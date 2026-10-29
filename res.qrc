@@ -1,0 +1,21 @@
+<RCC>
+    <qresource prefix="/">
+        <file>img/新建目录.svg</file>
+        <file>img/save-3-fill.svg</file>
+        <file>img/查找.svg</file>
+        <file>img/撤销.svg</file>
+        <file>img/打开.svg</file>
+        <file>img/顶部工具栏-工具.svg</file>
+        <file>img/复制.svg</file>
+        <file>img/恢复出厂.svg</file>
+        <file>img/剪切.svg</file>
+        <file>img/另存为.svg</file>
+        <file>img/全选.svg</file>
+        <file>img/替换.svg</file>
+        <file>img/退出.svg</file>
+        <file>img/粘贴.svg</file>
+        <file>img/状态栏.svg</file>
+        <file>img/自动换行.svg</file>
+        <file>img/字体.svg</file>
+    </qresource>
+</RCC>
