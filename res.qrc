@@ -17,5 +17,6 @@
         <file>img/状态栏.svg</file>
         <file>img/自动换行.svg</file>
         <file>img/字体.svg</file>
+        <file>img/文本编辑_填充.svg</file>
     </qresource>
 </RCC>
