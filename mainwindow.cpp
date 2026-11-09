@@ -69,7 +69,7 @@ void MainWindow::on_action_A_triggered()
 
 void MainWindow::on_actionFind_triggered()
 {
-    SerchDialog dlg;
+    SerchDialog dlg(this,ui->textEdit);
     dlg.exec();
 }
 
