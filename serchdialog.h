@@ -22,6 +22,9 @@ private slots:
     void on_btCancel_clicked();
 
 private:
+    // 从当前光标位置继续查找，forward 为 true 表示向下查找
+    bool findNext(bool forward);
+
     Ui::SerchDialog *ui;
 
     QPlainTextEdit *pTextEdit;

@@ -8,6 +8,7 @@
 #include<QTextStream>
 #include<QColorDialog>
 #include<qfontdialog.h>
+#include <QCloseEvent>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -38,17 +39,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionCut->setEnabled(false);
     ui->actionPaste->setEnabled(false);
 
-    QPlainTextEdit::LineWrapMode mode = ui->textEdit->lineWrapMode();
-    if(mode == QTextEdit::NoWrap){
-        ui->textEdit->setLineWrapMode(QPlainTextEdit::WidgetWidth);
-
-        ui->actionWordWrap->setChecked(false);
-
-    }else{
-        ui->textEdit->setLineWrapMode(QPlainTextEdit::NoWrap);
-        ui->actionWordWrap->setChecked(true);
-    }
-
+    // 默认开启自动换行，并让菜单的勾选状态和实际行为保持一致
+    ui->textEdit->setLineWrapMode(QPlainTextEdit::WidgetWidth);
+    ui->actionWordWrap->setChecked(true);
 
     ui->actionStatusbar->setChecked(true);
     ui->actionToolbar->setChecked(true);
@@ -104,6 +97,9 @@ void MainWindow::on_actionOpen_triggered()
         return;
 
     QString filename = QFileDialog::getOpenFileName(this,"打开文件",".",tr("Text files(*.txt);;All(*.*)"));
+    if(filename.isEmpty())              // 用户取消了对话框
+        return;
+
     QFile file(filename);
 
     if(!file.open(QFile::ReadOnly | QFile::Text)){
@@ -116,7 +112,7 @@ void MainWindow::on_actionOpen_triggered()
 
     QTextStream in(&file);
     QString text = in.readAll();
-    ui->textEdit->insertPlainText(text);
+    ui->textEdit->setPlainText(text);    // 用 setPlainText，避免和编辑器里已有内容叠加
     file.close();
 
     this->setWindowTitle(QFileInfo(filename).absoluteFilePath());
@@ -133,7 +129,8 @@ void MainWindow::on_actionSave_triggered()
 
     if(filePath == ""){
         QString filename = QFileDialog::getSaveFileName(this,"保存文件",".",tr("Text files(*.txt)"));
-
+        if(filename.isEmpty())          // 用户取消了对话框
+            return;
 
         QFile file(filename);
         if(!file.open(QFile::WriteOnly | QFile::Text)){
@@ -176,7 +173,8 @@ void MainWindow::on_actionSave_triggered()
 void MainWindow::on_actionSaveAs_triggered()
 {
     QString filename = QFileDialog::getSaveFileName(this,"保存文件",".",tr("Text files(*.txt)"));
-
+    if(filename.isEmpty())              // 用户取消了对话框
+        return;
 
     QFile file(filename);
     if(!file.open(QFile::WriteOnly | QFile::Text)){
@@ -197,6 +195,8 @@ void MainWindow::on_actionSaveAs_triggered()
 
     this->setWindowTitle(QFileInfo(filePath).absoluteFilePath());
 
+    textChanged = false;                // 另存完成后修改状态复位
+
 
 }
 
@@ -207,6 +207,16 @@ void MainWindow::on_textEdit_textChanged()
         this->setWindowTitle("*" + this->windowTitle());
         textChanged=true;
     }
+}
+
+
+// 点窗口右上角的叉、或者执行"退出"时都会走这里
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    if(userEditConfirmed())
+        event->accept();
+    else
+        event->ignore();
 }
 
 bool MainWindow::userEditConfirmed()
@@ -220,7 +230,6 @@ bool MainWindow::userEditConfirmed()
 
         msg.setIcon(QMessageBox::Question);
         msg.setWindowTitle("...");
-        msg.setWindowFlag(Qt::Drawer);
         msg.setText(QString("是否将更新保存到\n")+"\"" + path + "\"?");
         msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
 
@@ -281,7 +290,8 @@ void MainWindow::on_actionRedo_triggered()
 void MainWindow::on_textEdit_copyAvailable(bool b)
 {
     ui->actionCopy->setEnabled(b);
-    ui->actionPaste->setEnabled(true);
+    ui->actionCut->setEnabled(b);                        // 有选中内容时"剪切"才可用
+    ui->actionPaste->setEnabled(ui->textEdit->canPaste());
 }
 
 
@@ -325,7 +335,7 @@ void MainWindow::on_action_6_triggered()//字体背景颜色
 void MainWindow::on_actionWordWrap_triggered()
 {
     QPlainTextEdit::LineWrapMode mode = ui->textEdit->lineWrapMode();
-    if(mode == QTextEdit::NoWrap){
+    if(mode == QPlainTextEdit::NoWrap){
         ui->textEdit->setLineWrapMode(QPlainTextEdit::WidgetWidth);
 
         ui->actionWordWrap->setChecked(true);
@@ -362,7 +372,7 @@ void MainWindow::on_actionToolbar_triggered()
 void MainWindow::on_actionStatusbar_triggered()
 {
     bool visible = ui->statusbar->isVisible();
-    ui->toolBar->setVisible(!visible);
+    ui->statusbar->setVisible(!visible);
     ui->actionStatusbar->setChecked(!visible);
 }
 
@@ -375,7 +385,6 @@ void MainWindow::on_actionSelectAll_triggered()
 
 void MainWindow::on_actionExit_triggered()
 {
-    if(userEditConfirmed())
-        exit(0);
+    close();      // 交给 closeEvent 统一处理"是否需要保存"
 }
 

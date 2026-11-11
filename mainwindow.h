@@ -10,6 +10,8 @@ class MainWindow;
 }
 QT_END_NAMESPACE
 
+class QCloseEvent;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -17,6 +19,10 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
+
+protected:
+    // 关闭窗口时统一走“是否保存修改”的确认流程
+    void closeEvent(QCloseEvent *event) override;
 
 private slots:
     void on_action_A_triggered();
