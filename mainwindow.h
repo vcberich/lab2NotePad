@@ -41,6 +41,8 @@ private slots:
 
     void on_textEdit_textChanged();
 
+    void on_textEdit_cursorPositionChanged();
+
     void on_actionCopy_triggered();
 
     void on_actionUndo_triggered();
@@ -87,6 +89,9 @@ private:
 
 
     bool userEditConfirmed();
+
+    // 刷新状态栏里的字数/行数与行列号
+    void updateStatusInfo();
 
 
 };

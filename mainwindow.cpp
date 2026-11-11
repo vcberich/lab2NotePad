@@ -9,6 +9,9 @@
 #include<QColorDialog>
 #include<qfontdialog.h>
 #include <QCloseEvent>
+#include <QTextCharFormat>
+#include <QTextCursor>
+#include <QPalette>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -45,6 +48,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->actionStatusbar->setChecked(true);
     ui->actionToolbar->setChecked(true);
+
+    updateStatusInfo();
 }
 
 
@@ -69,7 +74,7 @@ void MainWindow::on_actionFind_triggered()
 
 void MainWindow::on_actionReplace_triggered()
 {
-    ReplaceDialog dlg;
+    ReplaceDialog dlg(this, ui->textEdit);
     dlg.exec();
 }
 
@@ -207,6 +212,28 @@ void MainWindow::on_textEdit_textChanged()
         this->setWindowTitle("*" + this->windowTitle());
         textChanged=true;
     }
+
+    updateStatusInfo();
+}
+
+
+void MainWindow::on_textEdit_cursorPositionChanged()
+{
+    updateStatusInfo();
+}
+
+
+void MainWindow::updateStatusInfo()
+{
+    const QString text = ui->textEdit->toPlainText();
+    statusLabel.setText(QString("length: %1    lines: %2")
+                            .arg(text.length())
+                            .arg(ui->textEdit->blockCount()));
+
+    const QTextCursor cursor = ui->textEdit->textCursor();
+    statusCursorLabel.setText(QString("Ln: %1    Col: %2")
+                                  .arg(cursor.blockNumber() + 1)
+                                  .arg(cursor.positionInBlock() + 1));
 }
 
 
@@ -316,19 +343,30 @@ void MainWindow::on_action_3_triggered()//字体颜色
 }
 
 
-void MainWindow::on_action_5_triggered()//编辑器背景颜色
+void MainWindow::on_action_5_triggered()//字体背景色（选中文字的底色）
 {
-    QColor color = QColorDialog::getColor(Qt::black,this,"选择颜色");
-    if(color.isValid()){
-        ui->textEdit->setStyleSheet(QString("QPlainTextEdit{background-color: %1}").arg(color.name()));
-    }
+    QColor color = QColorDialog::getColor(Qt::yellow,this,"选择字体背景色");
+    if(!color.isValid())
+        return;
 
+    QTextCharFormat fmt;
+    fmt.setBackground(color);
+
+    QTextCursor cursor = ui->textEdit->textCursor();
+    if(cursor.hasSelection())
+        cursor.mergeCharFormat(fmt);            // 只改选中的文字
+    else
+        ui->textEdit->setCurrentCharFormat(fmt); // 没选中就作用于接下来输入的文字
 }
 
 
-void MainWindow::on_action_6_triggered()//字体背景颜色
+void MainWindow::on_action_6_triggered()//编辑器背景色
 {
-
+    QColor color = QColorDialog::getColor(ui->textEdit->palette().color(QPalette::Base),
+                                          this,"选择编辑器背景色");
+    if(color.isValid()){
+        ui->textEdit->setStyleSheet(QString("QPlainTextEdit{background-color: %1}").arg(color.name()));
+    }
 }
 
 
