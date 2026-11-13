@@ -35,7 +35,7 @@ ReplaceDialog::~ReplaceDialog()
     delete ui;
 }
 
-bool ReplaceDialog::findNext(bool forward)
+bool ReplaceDialog::findNext(bool forward, bool quiet)
 {
     if (!pTextEdit)
         return false;
@@ -43,7 +43,8 @@ bool ReplaceDialog::findNext(bool forward)
     const QString target = ui->lineEdit->text();
     if (target.isEmpty())
     {
-        QMessageBox::information(this, tr("替换"), tr("请输入要查找的内容"));
+        if (!quiet)
+            QMessageBox::information(this, tr("替换"), tr("请输入要查找的内容"));
         return false;
     }
 
@@ -59,7 +60,8 @@ bool ReplaceDialog::findNext(bool forward)
 
     if (found.isNull())
     {
-        QMessageBox::information(this, tr("替换"), tr("未找到“%1”").arg(target));
+        if (!quiet)
+            QMessageBox::information(this, tr("替换"), tr("未找到“%1”").arg(target));
         return false;
     }
 
@@ -131,14 +133,16 @@ void ReplaceDialog::on_btnReplace_clicked()
 {
     if (!replaceCurrent())
     {
-        // 当前没选中匹配项，先找下一个，找到再替换
+        // 当前没选中匹配项，先找下一个，找到再替换（找不到要提示）
         if (!findNext(!ui->rdUp->isChecked()))
             return;
         if (!replaceCurrent())
             return;
     }
 
-    findNext(!ui->rdUp->isChecked());   // 替换完成后跳到下一个匹配项
+    // 替换成功后静默跳到下一个匹配项：
+    // 如果后面没有匹配了，不应该再弹“未找到”，否则看起来像替换失败
+    findNext(!ui->rdUp->isChecked(), true);
 }
 
 void ReplaceDialog::on_btnFindNext_4_clicked()

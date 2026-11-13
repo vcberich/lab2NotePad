@@ -24,7 +24,8 @@ private slots:
     void on_btCancel_clicked();
 
 private:
-    bool findNext(bool forward);          // 查找并选中下一个匹配项
+    // 查找并选中下一个匹配项；quiet 为 true 时找不到不弹提示
+    bool findNext(bool forward, bool quiet = false);
     bool replaceCurrent();                // 把当前选中的匹配项替换掉
     int replaceAll();                     // 全部替换，返回替换处数
 
