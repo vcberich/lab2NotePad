@@ -28,7 +28,7 @@
      <number>1</number>
     </property>
     <item row="0" column="0">
-     <widget class="QPlainTextEdit" name="textEdit"/>
+     <widget class="CodeEditor" name="textEdit"/>
     </item>
    </layout>
   </widget>
@@ -49,6 +49,7 @@
     <addaction name="actionOpen"/>
     <addaction name="actionSave"/>
     <addaction name="actionSaveAs"/>
+    <addaction name="actionAutoSave"/>
    </widget>
    <widget class="QMenu" name="menu_E">
     <property name="title">
@@ -184,6 +185,17 @@
    </property>
    <property name="text">
     <string>另存为（&amp;A）</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionAutoSave">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>定时自动保存</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>
@@ -419,6 +431,14 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>CodeEditor</class>
+   <extends>QPlainTextEdit</extends>
+   <header>codeeditor.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="res.qrc"/>
  </resources>

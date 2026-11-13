@@ -11,6 +11,7 @@ class MainWindow;
 QT_END_NAMESPACE
 
 class QCloseEvent;
+class QTimer;
 
 class MainWindow : public QMainWindow
 {
@@ -77,6 +78,10 @@ private slots:
 
     void on_actionExit_triggered();
 
+    void on_actionAutoSave_triggered();
+
+    void on_action_L_triggered();      // 显示/隐藏行号
+
 private:
     Ui::MainWindow *ui;
 
@@ -87,11 +92,16 @@ private:
 
     bool textChanged;
 
+    // 定时自动保存用
+    QTimer *autoSaveTimer = nullptr;
 
     bool userEditConfirmed();
 
     // 刷新状态栏里的字数/行数与行列号
     void updateStatusInfo();
+
+    // 定时器到点时调用：有未保存修改且已有文件路径才真正写盘
+    void autoSave();
 
 
 };

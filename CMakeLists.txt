@@ -17,6 +17,8 @@ set(PROJECT_SOURCES
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
+        codeeditor.cpp
+        codeeditor.h
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
@@ -47,6 +49,10 @@ else()
 endif()
 
 target_link_libraries(MyNotepad PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+
+# ui_mainwindow.h 里会 #include "codeeditor.h"（自定义提升控件），
+# 需要把工程目录加入头文件搜索路径
+target_include_directories(MyNotepad PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an

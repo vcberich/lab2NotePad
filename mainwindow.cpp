@@ -12,6 +12,12 @@
 #include <QTextCharFormat>
 #include <QTextCursor>
 #include <QPalette>
+#include <QTimer>
+
+namespace {
+// 定时自动保存的间隔（毫秒）
+constexpr int AutoSaveIntervalMs = 60 * 1000;
+}
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -48,6 +54,18 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->actionStatusbar->setChecked(true);
     ui->actionToolbar->setChecked(true);
+
+    // 定时自动保存：默认开启，每 60 秒检查一次；
+    // 只有"有未保存的修改"且"已经有关联的文件路径"时才会真正写盘
+    autoSaveTimer = new QTimer(this);
+    autoSaveTimer->setInterval(AutoSaveIntervalMs);
+    connect(autoSaveTimer, &QTimer::timeout, this, &MainWindow::autoSave);
+    autoSaveTimer->start();
+    ui->actionAutoSave->setChecked(true);
+
+    // “显示行号”做成可勾选，默认显示
+    ui->action_L->setCheckable(true);
+    ui->action_L->setChecked(true);
 
     updateStatusInfo();
 }
@@ -424,5 +442,47 @@ void MainWindow::on_actionSelectAll_triggered()
 void MainWindow::on_actionExit_triggered()
 {
     close();      // 交给 closeEvent 统一处理"是否需要保存"
+}
+
+
+void MainWindow::on_action_L_triggered()
+{
+    // 勾上显示行号，取消勾选则隐藏
+    ui->textEdit->setLineNumberAreaVisible(ui->action_L->isChecked());
+}
+
+
+void MainWindow::on_actionAutoSave_triggered()
+{
+    if(ui->actionAutoSave->isChecked()){
+        autoSaveTimer->start();
+        ui->statusbar->showMessage(QString("自动保存已开启（每 %1 秒）").arg(AutoSaveIntervalMs / 1000), 3000);
+    }else{
+        autoSaveTimer->stop();
+        ui->statusbar->showMessage("自动保存已关闭", 3000);
+    }
+}
+
+
+void MainWindow::autoSave()
+{
+    // 没有改动、或者还没另存过（没有路径）就不写盘
+    if(!textChanged || filePath.isEmpty())
+        return;
+
+    QFile file(filePath);
+    if(!file.open(QFile::WriteOnly | QFile::Text))
+        return;
+
+    QTextStream out(&file);
+    out << ui->textEdit->toPlainText();
+    file.flush();
+    file.close();
+
+    // 存盘后清除"未保存"标记，窗口标题去掉 *
+    textChanged = false;
+    this->setWindowTitle(QFileInfo(filePath).absoluteFilePath());
+
+    ui->statusbar->showMessage(QString("已自动保存：%1").arg(QFileInfo(filePath).fileName()), 3000);
 }
 
